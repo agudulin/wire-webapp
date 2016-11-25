@@ -147,6 +147,11 @@
         </div>
       <!-- /ko -->
 
+      <!-- ko if: top_warning() === z.ViewModel.WarningType.LIFECYCLE_UPDATE -->
+        <div class="warning-bar warning-bar-connection warning-bar-click bg-theme" data-bind="click: function(){amplify.publish(z.event.WebApp.LIFECYCLE.REFRESH)}">
+          <div class="warning-bar-message" data-bind="l10n_html: {'id': z.string.warning_lifecycle_update, 'replace': {'placeholder': '%icon', 'content': '<span class=\'warning-bar-icon-small icon-info\'></span>'}}"></div>
+        </div>
+      <!-- /ko -->
     </div>
   <!-- /ko -->
 

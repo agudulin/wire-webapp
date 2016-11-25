@@ -26,10 +26,11 @@ z.ViewModel.WarningType =
   REQUEST_MICROPHONE: 'request_microphone'
   REQUEST_NOTIFICATION: 'request_notification'
   REQUEST_SCREEN: 'request_screen'
-# Permission callbacks: !dimmed screen, warning bar
+  # Permission callbacks: !dimmed screen, warning bar
   DENIED_CAMERA: 'camera_access_denied'
   DENIED_MICROPHONE: 'mic_access_denied'
   DENIED_SCREEN: 'screen_access_denied'
+  LIFECYCLE_UPDATE: 'lifecycle_update'
   NOT_FOUND_CAMERA: 'not_found_camera'
   NOT_FOUND_MICROPHONE: 'not_found_microphone'
   UNSUPPORTED_INCOMING_CALL: 'unsupported_incoming_call'
@@ -37,6 +38,7 @@ z.ViewModel.WarningType =
   CONNECTIVITY_RECONNECT: 'connectivity_reconnect'
   CONNECTIVITY_RECOVERY: 'connectivity_recovery'
   NO_INTERNET: 'no_internet'
+
 
 class z.ViewModel.WarningsViewModel
   constructor: (element_id) ->
@@ -50,6 +52,7 @@ class z.ViewModel.WarningsViewModel
     @warnings.subscribe (warnings) ->
       mini_modes = [
         z.ViewModel.WarningType.CONNECTIVITY_RECONNECT
+        z.ViewModel.WarningType.LIFECYCLE_UPDATE
         z.ViewModel.WarningType.NO_INTERNET
       ]
       if warnings.length is 0

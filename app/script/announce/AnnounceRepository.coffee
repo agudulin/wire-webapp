@@ -70,13 +70,15 @@ class z.announce.AnnounceRepository
           amplify.publish z.event.WebApp.ANALYTICS.EVENT, z.tracking.EventName.ANNOUNCE.SENT, campaign: announcement.campaign
           @logger.info "Announcement '#{announcement.title}' shown"
 
+          if announcement.refresh
+            amplify.publish z.event.WebApp.LIFECYCLE.UPDATE
+
           notification.onclick = =>
             amplify.publish z.event.WebApp.ANALYTICS.EVENT, z.tracking.EventName.ANNOUNCE.CLICKED, campaign: announcement.campaign
             @logger.info "Announcement '#{announcement.title}' clicked"
             if announcement.link
               z.util.safe_window_open announcement.link
             if announcement.refresh
-              window.location.reload true
-              window.focus()
+              amplify.publish z.event.WebApp.LIFECYCLE.REFRESH
             notification.close()
           break

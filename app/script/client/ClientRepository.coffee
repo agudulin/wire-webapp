@@ -435,11 +435,8 @@ class z.client.ClientRepository
     .then (response) =>
       return @_get_clients_by_user_id response, @self_user().id, expect_current_client
     .then (client_ets) =>
-      @self_user().add_client client_et for client_et in client_ets
+      @self_user().add_client client_et for client_et in client_ets when client_et.id isnt @cryptography_repository.current_client().id
       return @self_user().devices()
-    .catch (error) =>
-      @logger.error "Unable to retrieve clients data: #{error}"
-      throw error
 
   ###
   Is the current client permanent.

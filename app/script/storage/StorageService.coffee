@@ -135,6 +135,15 @@ class z.storage.StorageService
         "#{@OBJECT_STORE_PREKEYS}": ''
         "#{@OBJECT_STORE_SESSIONS}": ''
 
+      version_11 =
+        "#{@OBJECT_STORE_AMPLIFY}": ''
+        "#{@OBJECT_STORE_CLIENTS}": ', meta.primary_key, user_id'
+        "#{@OBJECT_STORE_CONVERSATION_EVENTS}": ', category, conversation, time, type, [conversation+time], [conversation+category]'
+        "#{@OBJECT_STORE_CONVERSATIONS}": ', id, last_event_timestamp'
+        "#{@OBJECT_STORE_KEYS}": ''
+        "#{@OBJECT_STORE_PREKEYS}": ''
+        "#{@OBJECT_STORE_SESSIONS}": ''
+
       @db = new Dexie @db_name
 
       @db.on 'blocked', =>
@@ -184,6 +193,11 @@ class z.storage.StorageService
         @logger.warn "Database upgrade to version #{@db.verno}", transaction
         transaction[@OBJECT_STORE_CONVERSATION_EVENTS].toCollection().modify (event) ->
           event.category = z.message.MessageCategorization.category_from_event event
+      @db.version(11).stores version_10
+      .upgrade (transaction) =>
+        transaction[@OBJECT_STORE_CLIENTS].toCollection().modify (client) =>
+          ids = z.client.Client.dismantle_user_client_id
+          client.user_id = ids.user_id if ids.user_id
 
       @db.open()
       .then =>

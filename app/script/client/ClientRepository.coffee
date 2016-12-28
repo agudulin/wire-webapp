@@ -486,47 +486,40 @@ class z.client.ClientRepository
   _get_clients_by_user_id: (clients, user_id, expect_current_client) ->
     return new Promise (resolve, reject) =>
       clients_from_backend = {}
+      clients_from_backend[client.id] = client for client in clients
+
       clients_stored_in_db = []
 
-      client_keys = []
-
-      for client in clients
-        client_keys.push @_construct_primary_key user_id, client.id
-        clients_from_backend[client.id] = client
-
       # Find clients in database
-      @client_service.load_clients_from_db client_keys
+      @client_service.load_clients_by_user_id_from_db user_id
       .then (results) =>
-        # Save new clients and cache existing ones
         promises = []
 
-        # Known clients will be returned as object, unknown clients will resolve with their expected primary key
         for result in results
-
-          # Handle new data which was not stored already in our local database
-          if _.isString result
-            ids = z.client.Client.dismantle_user_client_id result
-            continue if expect_current_client and @_is_current_client user_id, ids.client_id
-
-            @logger.info "New client '#{ids.client_id}' will be stored locally"
-            client_payload = clients_from_backend[ids.client_id]
-            promises.push @_update_client_schema_in_db user_id, client_payload
-            continue
-
           if clients_from_backend[result.id]
             [client_payload, contains_update] = @client_mapper.update_client result, clients_from_backend[result.id]
+            delete clients_from_backend[result.id]
 
-            # Known clients with updated backend information
+            # Known client with changes on backend
             if contains_update
+              @logger.warn "Updating client '#{result.id}' of user '#{user_id}' locally"
               promises.push @save_client_in_db user_id, client_payload
               continue
 
-            # Known clients with no changes
+            # Known client with no changes on backend
             clients_stored_in_db.push client_payload
             continue
 
-          @logger.warn "Deleted client '#{result.id}' will be removed locally"
+          # Known client with deleted on backend
+          @logger.warn "Removing client '#{result.id}' of user '#{user_id}' locally"
           @remove_client user_id, result.id
+
+        for client_id, client_payload of clients_from_backend
+          continue if expect_current_client and @_is_current_client user_id, client_id
+
+          # New client on backend
+          @logger.info "New client '#{client_id}' of user '#{user_id}' will be stored locally"
+          promises.push @_update_client_schema_in_db user_id, client_payload
 
         return Promise.all promises
       .then (new_records) =>

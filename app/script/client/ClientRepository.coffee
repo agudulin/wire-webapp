@@ -435,7 +435,11 @@ class z.client.ClientRepository
     .then (response) =>
       return @_get_clients_by_user_id response, @self_user().id, expect_current_client
     .then (client_ets) =>
-      @self_user().add_client client_et for client_et in client_ets when client_et.id isnt @cryptography_repository.current_client().id
+      for client_et in client_ets
+        if client_et.id is @cryptography_repository.current_client().id
+          @remove_client @self_user().id, client_et.id
+        else
+          @self_user().add_client client_et
       return @self_user().devices()
 
   ###
